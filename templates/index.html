@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>StockAI — Premium Investment Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          sans: ['Inter', 'sans-serif'],
+          outfit: ['Outfit', 'sans-serif'],
+          mono: ['Space Mono', 'monospace'],
+        },
+        colors: {
+          bg: '#0A0A0A',
+          bg2: '#121212',
+          bg3: '#27272A',
+          bordercol: '#3F3F46',
+          textcol: '#F8FAFC',
+          text2col: '#A1A1AA',
+          text3col: '#71717A',
+          brand: '#8B5CF6',
+          brand2: '#38BDF8',
+          branddim: 'rgba(139, 92, 246, 0.15)',
+          success: '#10B981',
+          successdim: 'rgba(16, 185, 129, 0.15)',
+          danger: '#F43F5E',
+          dangerdim: 'rgba(244, 63, 94, 0.15)',
+          warn: '#F59E0B',
+          warndim: 'rgba(245, 158, 11, 0.15)',
+        },
+        boxShadow: {
+            'soft': '0 10px 40px -10px rgba(0,0,0,0.7)',
+            'glow': '0 0 20px rgba(139, 92, 246, 0.35)',
+        }
+      }
+    }
+  }
+</script>
+<style>
+/* Optional custom scrollbar, completely fine to keep */
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-thumb{background:#334155;border-radius:3px}
+.page{display:none;}.page.active{display:block;}
+.spin{width:28px;height:28px;border:3px solid #334155;border-top-color:#38BDF8;border-radius:50%;animation:spin .7s linear infinite;margin:32px auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+/* Ambient Interactive Blooms */
+@keyframes bloomFloat1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(30px, -50px) scale(1.1); }
+  66% { transform: translate(-20px, 20px) scale(0.9); }
+}
+@keyframes bloomFloat2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(-30px, 40px) scale(0.95); }
+  66% { transform: translate(20px, -20px) scale(1.05); }
+}
+.ambient-blob-1 {
+  position: absolute; width: 40vh; height: 40vh; background: #0EA5E9; 
+  filter: blur(140px); border-radius: 50%; pointer-events: none; z-index: 0; opacity: 0.15;
+  top: -100px; left: -100px; animation: bloomFloat1 12s ease-in-out infinite;
+}
+.ambient-blob-2 {
+  position: absolute; width: 35vh; height: 35vh; background: #8B5CF6; 
+  filter: blur(140px); border-radius: 50%; pointer-events: none; z-index: 0; opacity: 0.15;
+  bottom: 10%; right: -50px; animation: bloomFloat2 15s ease-in-out infinite alternate;
+}
+
+/* Glassmorphism over ambient */
+.glass-pane {
+  background: rgba(10, 10, 10, 0.70);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+}
+
+/* Click Ripple */
+.ripple {
+  position: absolute; border-radius: 50%; transform: scale(0);
+  background: rgba(37, 99, 235, 0.3); z-index: 9999;
+  animation: rippleAnim 0.6s linear; pointer-events: none;
+}
+@keyframes rippleAnim {
+  to { transform: scale(4); opacity: 0; }
+}
+
+/* Enhancing Interactivity on Cards */
+.interactive-card {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+  background: rgba(30, 41, 59, 0.6); backdrop-filter: blur(15px);
+}
+.interactive-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 15px 30px -10px rgba(0,0,0,0.5);
+  border-color: rgba(56, 189, 248, 0.4);
+}
+</style>
+</head>
+<body class="bg-gradient-to-br from-bg via-[#0F0F14] to-bg2 text-textcol font-sans min-h-screen text-sm antialiased selection:bg-brand selection:text-white relative" id="app-body">
+<div class="ambient-blob-1"></div>
+<div class="ambient-blob-2"></div>
+<div class="flex h-screen overflow-hidden glass-pane relative z-10">
+  <!-- Sidebar -->
+  <aside class="w-60 bg-bg2/90 border-r border-bordercol flex flex-col shrink-0 transition-all duration-300 shadow-soft z-20">
+    <div class="py-6 px-6 flex items-center gap-3 border-b border-bordercol">
+      <div class="w-9 h-9 bg-brand/10 text-brand rounded-xl flex items-center justify-center text-xl backdrop-blur-sm border border-brand/20">📈</div>
+      <div class="text-xl font-outfit font-extrabold tracking-tight">Stock<span class="bg-gradient-to-r from-brand2 to-brand bg-clip-text text-transparent">AI</span></div>
+    </div>
+    <nav class="flex-1 py-4 px-3 space-y-1">
+      <div class="nav-item active flex items-center gap-3 px-4 py-3 cursor-pointer text-text2col font-medium rounded-xl transition-all duration-200 hover:bg-bg3 hover:text-textcol group" onclick="nav('dashboard')"><span class="text-lg group-hover:scale-110 transition-transform">🏠</span>Dashboard</div>
+      <div class="nav-item flex items-center gap-3 px-4 py-3 cursor-pointer text-text2col font-medium rounded-xl transition-all duration-200 hover:bg-bg3 hover:text-textcol group" onclick="nav('picks')"><span class="text-lg group-hover:scale-110 transition-transform">🎯</span>AI Picks</div>
+      <div class="nav-item flex items-center gap-3 px-4 py-3 cursor-pointer text-text2col font-medium rounded-xl transition-all duration-200 hover:bg-bg3 hover:text-textcol group" onclick="nav('explore')"><span class="text-lg group-hover:scale-110 transition-transform">🔍</span>Explore</div>
+      <div class="nav-item flex items-center gap-3 px-4 py-3 cursor-pointer text-text2col font-medium rounded-xl transition-all duration-200 hover:bg-bg3 hover:text-textcol group" onclick="nav('watchlist')"><span class="text-lg group-hover:scale-110 transition-transform">⭐</span>Watchlist</div>
+      <div class="nav-item flex items-center gap-3 px-4 py-3 cursor-pointer text-text2col font-medium rounded-xl transition-all duration-200 hover:bg-bg3 hover:text-textcol group" onclick="nav('portfolio')"><span class="text-lg group-hover:scale-110 transition-transform">💼</span>Portfolio</div>
+      <div class="nav-item flex items-center gap-3 px-4 py-3 cursor-pointer text-text2col font-medium rounded-xl transition-all duration-200 hover:bg-bg3 hover:text-textcol group mt-4 border-t border-bordercol pt-4" onclick="nav('settings')"><span class="text-lg group-hover:scale-110 transition-transform">⚙️</span>Settings</div>
+    </nav>
+    <div class="p-5 border-t border-bordercol bg-bg2/80 backdrop-blur-md">
+      <div class="flex items-center gap-2 text-xs font-medium">
+        <div class="w-2 h-2 rounded-full bg-success shadow-[0_0_8px_rgba(16,185,129,0.6)]" id="kite-dot"></div>
+        <span id="kite-lbl" class="tracking-wide uppercase text-success">Live (Yahoo)</span>
+      </div>
+      <!-- Added Login/Signup links here -->
+      <div class="mt-4 flex flex-col gap-2">
+        <a href="/logout/" class="w-full bg-bg3 hover:bg-bordercol text-textcol py-2 rounded-lg text-center font-bold text-sm transition-all shadow-sm border border-bordercol">Sign Out</a>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="flex-1 flex flex-col overflow-y-auto relative z-10 bg-transparent">
+    <header class="h-16 bg-bg2/80 backdrop-blur-lg border-b border-bordercol px-6 flex items-center gap-4 sticky top-0 z-30">
+      <div class="flex-1 max-w-md relative group">
+        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-text3col group-focus-within:text-brand transition-colors z-10 block pointer-events-none">🔍</span>
+        <input class="w-full bg-bg3/50 border border-bordercol focus:border-brand rounded-xl py-2 pl-9 pr-4 text-sm outline-none transition-all duration-200 focus:bg-bg3 focus:shadow-soft placeholder-text3col" id="hdr-search" placeholder="Search stocks… e.g. TCS, INFY" autocomplete="off" oninput="hdrSearch(this.value)"/>
+        <div class="absolute top-[calc(100%+8px)] left-0 right-0 bg-bg2 border border-bordercol rounded-xl z-[100] overflow-hidden hidden shadow-soft" id="hdr-drop"></div>
+      </div>
+      <div class="ml-auto flex items-center gap-4">
+        <span class="text-xs text-textcol font-bold uppercase tracking-wider bg-bg3 border border-bordercol py-1 px-3 rounded-full shadow-sm" id="mkt-time"></span>
+        <button class="bg-brand/10 hover:bg-brand text-brand hover:text-bg2 border border-brand/20 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300 flex items-center gap-2 shadow-sm" onclick="refreshPage()">
+          <span class="text-lg leading-none">⟳</span> Refresh
+        </button>
+      </div>
+    </header>
+
+    <main class="p-8 pb-20">
+      <!-- Dashboard -->
+      <div class="page active" id="page-dashboard">
+        <h1 class="text-3xl font-outfit font-bold mb-1 w-fit bg-gradient-to-r from-brand2 to-brand bg-clip-text text-transparent">Market Overview</h1>
+        <p class="text-text2col mb-8 text-sm">Live NSE market data analysis & real-time trends</p>
+        <div class="flex flex-wrap gap-4 mb-8" id="idx-bar"><div class="spin"></div></div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="bg-bg2/80 backdrop-blur-md border border-bordercol rounded-2xl p-5 interactive-card"><h2 class="text-sm font-bold text-text2col uppercase tracking-wider mb-5 flex items-center gap-2">📈 Top Gainers</h2><div id="gainers" class="space-y-1"><div class="spin"></div></div></div>
+          <div class="bg-bg2/80 backdrop-blur-md border border-bordercol rounded-2xl p-5 interactive-card"><h2 class="text-sm font-bold text-text2col uppercase tracking-wider mb-5 flex items-center gap-2">📉 Top Losers</h2><div id="losers" class="space-y-1"><div class="spin"></div></div></div>
+        </div>
+        <div class="bg-bg2/80 backdrop-blur-md border border-bordercol rounded-2xl p-5 interactive-card mt-6">
+          <h2 class="text-sm font-bold text-text2col uppercase tracking-wider mb-5 flex items-center justify-between">
+            <span>🔥 Nifty 50 — Live Feed</span>
+            <span class="text-brand text-xs cursor-pointer hover:underline normal-case tracking-normal font-medium" onclick="loadAllStocks()">↻ Reload Data</span>
+          </h2>
+          <div id="all-stocks" class="space-y-1"><div class="spin"></div></div>
+        </div>
+      </div>
+
+      <!-- AI Picks -->
+      <div class="page" id="page-picks">
+        <h1 class="text-3xl font-outfit font-bold mb-1 flex items-center gap-3 w-fit bg-gradient-to-r from-brand2 to-brand bg-clip-text text-transparent">🎯 AI Top Picks</h1>
+        <p class="text-text2col mb-6 text-sm">ML signals computed from live price action and momentum</p>
+        <div class="flex bg-bg3/50 p-1 rounded-xl w-fit mb-6 border border-bordercol">
+          <button class="px-5 py-2 rounded-lg text-sm font-semibold transition-all w-32 nav-tab active bg-brand text-bg shadow-md" id="tab-intra" onclick="setPickType('intraday')">⚡ Intraday</button>
+          <button class="px-5 py-2 rounded-lg text-sm font-semibold transition-all w-32 nav-tab text-text2col hover:text-textcol" id="tab-long" onclick="setPickType('longterm')">📅 Long Term</button>
+        </div>
+        <div id="picks-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+          <div class="spin col-span-full"></div>
+        </div>
+      </div>
+
+      <!-- Explore -->
+      <div class="page" id="page-explore">
+        <div id="exp-home">
+          <h1 class="text-3xl font-outfit font-bold mb-1 w-fit bg-gradient-to-r from-brand2 to-brand bg-clip-text text-transparent">🔍 Explore Stocks</h1>
+          <p class="text-text2col mb-8 text-sm">Deep AI-powered analysis on any stock</p>
+          <div class="bg-bg2 border border-bordercol rounded-2xl p-6 max-w-xl mb-8 shadow-lg">
+            <h2 class="text-sm font-bold text-text2col uppercase tracking-wider mb-4">Stock Explorer</h2>
+            <input class="w-full bg-bg3 border border-bordercol rounded-xl p-3 text-sm focus:border-brand outline-none transition-all placeholder-text3col mb-4 focus:shadow-glow" placeholder="Type symbol or company name (e.g. RELIANCE)…" oninput="expSearch(this.value)" id="exp-inp"/>
+            <div id="exp-results" class="space-y-1"></div>
+          </div>
+          <h2 class="text-lg font-outfit font-bold mb-4">Nifty 50 Universe</h2>
+          <div id="exp-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
+        </div>
+        <div id="exp-detail" style="display:none">
+          <button class="mb-6 px-4 py-2 border border-bordercol text-text2col hover:text-brand hover:border-brand rounded-xl text-sm font-semibold transition-all flex items-center gap-2" onclick="backExplore()">← Back to Explorer</button>
+          <div id="detail-body"></div>
+        </div>
+      </div>
+
+      <!-- Watchlist -->
+      <div class="page" id="page-watchlist">
+        <h1 class="text-3xl font-outfit font-bold mb-1 w-fit bg-gradient-to-r from-brand2 to-brand bg-clip-text text-transparent">⭐ Watchlist</h1>
+        <p class="text-text2col mb-8 text-sm">Your monitored stocks with live predictive signals</p>
+        <div id="wl-body"><div class="spin"></div></div>
+      </div>
+
+      <!-- Portfolio -->
+      <div class="page" id="page-portfolio">
+        <h1 class="text-3xl font-outfit font-bold mb-1 w-fit bg-gradient-to-r from-brand2 to-brand bg-clip-text text-transparent">💼 Portfolio Tracker</h1>
+        <p class="text-text2col mb-8 text-sm">Real-time P&L and investment analytics</p>
+        <div id="port-body"><div class="spin"></div></div>
+      </div>
+
+      <!-- Settings -->
+      <div class="page" id="page-settings">
+        <h1 class="text-3xl font-outfit font-bold mb-1 w-fit bg-gradient-to-r from-brand2 to-brand bg-clip-text text-transparent">⚙️ Settings</h1>
+        <p class="text-text2col mb-8 text-sm">Configure broker connections and platform preferences</p>
+        <div class="bg-bg2 border border-bordercol rounded-2xl p-6 max-w-2xl shadow-lg">
+          <div class="flex items-center gap-3 text-sm font-bold border-b border-bordercol pb-4 mb-4">
+            <span class="text-brand text-lg">📡</span> Live Data Feed Enabled
+          </div>
+          <div class="mt-4 p-5 bg-bg3/50 border border-bordercol rounded-xl text-sm text-textcol leading-relaxed">
+            <p class="mb-4">StockAI is currently securely connected to <b class="text-brand">Yahoo Finance</b> for real-time market data.</p>
+            <ul class="list-disc list-inside text-xs text-text2col space-y-2 font-medium">
+                <li>No API Keys or Access Tokens required.</li>
+                <li>Free, unlimited live price updates for the entire Nifty 50 universe.</li>
+                <li>High-fidelity historical candlestick data backing the AI prediction engine.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+<script>
+
+// ════════════════════════════════════════════════════════
+// CONFIG
+// ════════════════════════════════════════════════════════
+const API = '/api';
+
+// ════════════════════════════════════════════════════════
+// HTTP helpers
+// ════════════════════════════════════════════════════════
+async function get(path) {
+  try {
+    const r = await fetch(API + path);
+    if (!r.ok) throw new Error(r.status);
+    return await r.json();
+  } catch(e) {
+    console.error('GET', path, e);
+    return null;
+  }
+}
+async function post(path, body) {
+  try {
+    const r = await fetch(API + path, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','X-CSRFToken': getCookie('csrftoken')},
+      body: JSON.stringify(body)
+    });
+    return await r.json();
+  } catch(e) { console.error('POST', path, e); return null; }
+}
+async function del(path) {
+  try {
+    await fetch(API + path, {
+      method: 'DELETE',
+      headers: {'X-CSRFToken': getCookie('csrftoken')}
+    });
+    return true;
+  } catch(e) { return false; }
+}
+function getCookie(name) {
+  const v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
+  return v ? v[2] : '';
+}
+
+// ════════════════════════════════════════════════════════
+// NAVIGATION
+// ════════════════════════════════════════════════════════
+let currentPage = 'dashboard';
+const PAGE_LOADERS = {
+  dashboard: loadDashboard,
+  picks:     loadPicks,
+  explore:   loadExplore,
+  watchlist: loadWatchlist,
+  portfolio: loadPortfolio,
+};
+
+function nav(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => {n.classList.remove('active'); n.classList.remove('bg-brand/10', 'text-brand'); n.classList.add('text-text2col'); });
+  document.getElementById('page-' + page).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if (n.getAttribute('onclick')?.includes("'" + page + "'")) { n.classList.add('active', 'bg-brand/10', 'text-brand'); n.classList.remove('text-text2col'); }
+  });
+  currentPage = page;
+  PAGE_LOADERS[page]?.();
+}
+
+function refreshPage() { PAGE_LOADERS[currentPage]?.(); }
+
+// ════════════════════════════════════════════════════════
+// TIME
+// ════════════════════════════════════════════════════════
+function tick() {
+  const now  = new Date();
+  const h    = now.getHours();
+  const open = h >= 9 && h < 16;
+  document.getElementById('mkt-time').textContent =
+    now.toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit'}) +
+    (open ? ' 🟢 Open' : ' 🔴 Closed');
+}
+setInterval(tick, 1000); tick();
+
+// ════════════════════════════════════════════════════════
+// RIPPLE & INTERACTIONS
+// ════════════════════════════════════════════════════════
+document.addEventListener('click', function(e) {
+  const target = e.target.closest('.ripple-trigger, button, .interactive-card, .nav-item');
+  if (target) {
+    const rect = target.getBoundingClientRect();
+    const ripple = document.createElement('span');
+    const diameter = Math.max(target.clientWidth, target.clientHeight);
+    ripple.style.width = ripple.style.height = diameter + 'px';
+    ripple.style.left = e.clientX - rect.left - diameter / 2 + 'px';
+    ripple.style.top = e.clientY - rect.top - diameter / 2 + 'px';
+    ripple.classList.add('ripple');
+    if(target.style.position === '') target.style.position = 'relative';
+    if(target.style.overflow === '') target.style.overflow = 'hidden';
+    target.appendChild(ripple);
+    setTimeout(() => { if(ripple.parentNode) ripple.parentNode.removeChild(ripple); }, 600);
+  }
+});
+
+// ════════════════════════════════════════════════════════
+// HELPERS
+// ════════════════════════════════════════════════════════
+const AV_COLORS = ['#ff6b6b','#ffa600','#00d09c','#4facfe','#a78bfa','#fb7185','#34d399','#60a5fa'];
+const SEC_COLORS = {IT:'#4facfe',Banking:'#a78bfa',FMCG:'#fb7185',Energy:'#ffa600',
+  Auto:'#34d399',Pharma:'#60a5fa',Finance:'#f472b6',Telecom:'#00d09c',
+  Paints:'#f59e0b',Cement:'#9ca3af',Consumer:'#c084fc',Power:'#fbbf24'};
+
+function avColor(sym) { return AV_COLORS[sym.charCodeAt(0) % AV_COLORS.length]; }
+function avInit(sym)  { return sym.slice(0,2); }
+function fmt(n)       { return (+n || 0).toLocaleString('en-IN', {maximumFractionDigits:2}); }
+function fmtK(n) {
+  n = +n || 0;
+  if (n >= 1e7) return (n/1e7).toFixed(2) + ' Cr';
+  if (n >= 1e5) return (n/1e5).toFixed(2) + ' L';
+  return n.toLocaleString('en-IN');
+}
+
+function chgClass(v) { return v > 0 ? 'up' : v < 0 ? 'down' : 'neu'; }
+function chgSign(v)  { return v >= 0 ? '+' : ''; }
+function badgeOf(sig) {
+  return sig === 'BUY'  ? `<span class="bg-success/15 text-success px-3 py-1 rounded-full text-xs font-bold tracking-wide">BUY</span>`
+       : sig === 'SELL' ? `<span class="bg-danger/15 text-danger px-3 py-1 rounded-full text-xs font-bold tracking-wide">SELL</span>`
+       :                  `<span class="bg-warn/15 text-warn px-3 py-1 rounded-full text-xs font-bold tracking-wide">HOLD</span>`;
+}
+
+function loading(id) { document.getElementById(id).innerHTML = '<div class="flex justify-center py-8"><div class="spin"></div></div>'; }
+function empty(id, icon, msg) {
+  document.getElementById(id).innerHTML =
+    `<div class="text-center py-12 px-6 text-text3col bg-bg2/30 border border-dashed border-bordercol rounded-2xl mt-4"><div class="text-5xl mb-4 opacity-70">${icon}</div>${msg}</div>`;
+}
+
+function toast(msg, err=false) {
+  const t = Object.assign(document.createElement('div'), {textContent: msg});
+  Object.assign(t.style, {
+    position:'fixed', bottom:'26px', right:'26px',
+    background: err ? '#F43F5E' : 'var(--success)',
+    color: '#0F172A',
+    padding:'11px 18px', borderRadius:'10px', fontWeight:'700',
+    fontSize:'13px', zIndex:'9999', boxShadow:'0 6px 24px rgba(0,0,0,.5)',
+    animation:'fadeUp .3s ease'
+  });
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+
+/* style removed */
+/* Keyframe in head */
+
+
+// ════════════════════════════════════════════════════════
+// DASHBOARD
+// ════════════════════════════════════════════════════════
+async function loadDashboard() {
+  loading('idx-bar'); loading('gainers'); loading('losers'); loading('all-stocks');
+  const data = await get('/market/');
+  if (!data) { toast('Failed to load market data', true); return; }
+
+  // Indices
+  document.getElementById('idx-bar').innerHTML =
+    Object.entries(data.indices).map(([name, d]) => `
+      <div class="bg-bg2 border border-bordercol rounded-xl p-4 flex-1 min-w-[160px] hover:border-brand transition-all cursor-pointer shadow-md group interactive-card ripple-trigger" style="position:relative; overflow:hidden;">
+        <div class="text-xs text-text3col font-bold tracking-widest uppercase mb-1">${name}</div>
+        <div class="text-xl font-bold font-mono group-hover:text-brand transition-colors">${fmt(d.value)}</div>
+        <div class="text-xs font-semibold mt-1 ${chgClass(d.change_pct)}">
+          ${d.change >= 0 ? '▲' : '▼'} ${Math.abs(d.change_pct).toFixed(2)}%
+        </div>
+      </div>`).join('');
+
+  // Gainers / Losers
+  const renderMovers = (list, id) => {
+    document.getElementById(id).innerHTML = list.map(s => `
+      <div class="flex items-center p-3 border-b border-bordercol gap-3 cursor-pointer rounded-xl transition-all hover:bg-bg3 group last:border-0 hover:translate-x-1 ripple-trigger" style="position:relative; overflow:hidden;" onclick="openStock('${s.symbol}')">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center text-xs font-bold shrink-0 text-bg shadow-inner" style="background:${avColor(s.symbol)}">${avInit(s.symbol)}</div>
+        <div class="flex-1">
+          <div class="text-base font-bold group-hover:text-brand transition-colors">${s.symbol}</div>
+          <div class="text-xs text-text2col mt-0.5 truncate max-w-[150px]">${s.name || ''}</div>
+        </div>
+        <div class="text-right">
+          <div class="text-base font-bold font-mono">₹${fmt(s.last_price)}</div>
+          <div class="text-xs mt-0.5 font-medium ${chgClass(s.change_pct)}">${chgSign(s.change_pct)}${(+s.change_pct).toFixed(2)}%</div>
+        </div>
+      </div>`).join('');
+  };
+  renderMovers(data.gainers, 'gainers');
+  renderMovers(data.losers,  'losers');
+
+  loadAllStocks();
+}
+
+async function loadAllStocks() {
+  loading('all-stocks');
+  const stocks = await get('/stocks/');
+  if (!stocks) { empty('all-stocks','⚠️','Failed to load'); return; }
+  document.getElementById('all-stocks').innerHTML = stocks.map(s => `
+    <div class="flex items-center p-3 border-b border-bordercol gap-3 cursor-pointer rounded-xl transition-all hover:bg-bg3 group last:border-0 hover:translate-x-1 ripple-trigger" style="position:relative; overflow:hidden;" onclick="openStock('${s.symbol}')">
+      <div class="w-10 h-10 rounded-xl flex items-center justify-center text-xs font-bold shrink-0 text-bg shadow-inner" style="background:${avColor(s.symbol)}">${avInit(s.symbol)}</div>
+      <div class="flex-1">
+        <div class="text-base font-bold group-hover:text-brand transition-colors">${s.symbol}
+          <span class="text-[10px] px-2.5 py-0.5 rounded-full font-bold ml-2" style="background:${SEC_COLORS[s.sector]||'#334155'}22;color:${SEC_COLORS[s.sector]||'#64748B'};margin-left:6px">${s.sector}</span>
+        </div>
+        <div class="text-xs text-text2col mt-0.5 truncate max-w-[150px]">${s.name}</div>
+      </div>
+      <div class="text-right">
+        <div class="text-base font-bold font-mono">₹${fmt(s.last_price)}</div>
+        <div class="text-xs mt-0.5 font-medium ${chgClass(s.change_pct)}">${chgSign(s.change_pct)}${(+s.change_pct).toFixed(2)}%</div>
+      </div>
+    </div>`).join('');
+}
+
+// ════════════════════════════════════════════════════════
+// AI PICKS
+// ════════════════════════════════════════════════════════
+let picksType = 'intraday';
+
+function setPickType(type) {
+  picksType = type;
+  document.getElementById('tab-intra').className = type==='intraday' ? 'px-5 py-2 rounded-lg text-sm font-semibold transition-all w-32 nav-tab active bg-brand text-bg shadow-md' : 'px-5 py-2 rounded-lg text-sm font-semibold transition-all w-32 nav-tab text-text2col hover:text-textcol';
+  document.getElementById('tab-long').className = type==='longterm' ? 'px-5 py-2 rounded-lg text-sm font-semibold transition-all w-32 nav-tab active bg-brand text-bg shadow-md' : 'px-5 py-2 rounded-lg text-sm font-semibold transition-all w-32 nav-tab text-text2col hover:text-textcol';
+  loadPicks();
+}
+
+async function loadPicks() {
+  const grid = document.getElementById('picks-grid');
+  grid.innerHTML = '<div class="spin" style="grid-column:1/-1"></div>';
+  const data = await get(`/scan/?type=${picksType}&limit=9`);
+  if (!data || !data.picks?.length) {
+    grid.innerHTML = '<div class="text-center py-12 px-6 text-text3col bg-bg2/30 border border-dashed border-bordercol rounded-2xl mt-4" style="grid-column:1/-1"><div class="text-5xl mb-4 opacity-70">🤔</div>No strong buy signals right now</div>';
+    return;
+  }
+  grid.innerHTML = data.picks.map(p => {
+    const cls = p.signal.toLowerCase();
+    const bTop = cls==="buy"?"border-t-4 border-t-success":cls==="sell"?"border-t-4 border-t-danger":"border-t-4 border-t-warn";
+    const confPct = Math.round(p.confidence * 100);
+    const confColor = confPct >= 70 ? 'var(--success)' : confPct >= 55 ? '#F59E0B' : '#EF4444';
+    return `<div class="bg-bg2 border border-bordercol rounded-2xl p-5 cursor-pointer transition-all hover:-translate-y-1 hover:shadow-xl relative overflow-hidden ${cls}" onclick="openStock('${p.symbol}')">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div><div class="text-lg font-bold">${p.symbol}</div><div class="text-xs text-text2col mt-0.5">${p.name}</div></div>
+        ${badgeOf(p.signal)}
+      </div>
+      <div class="text-2xl font-bold font-mono mt-3">₹${fmt(p.current_price)}</div>
+      <div style="display:flex;gap:10px;font-size:11px;color:#94A3B8;margin-top:6px">
+        <span>🎯 T1: <b style="color:var(--success)">₹${fmt(p.target1)}</b></span>
+        <span>🛑 SL: <b style="color:#EF4444">₹${fmt(p.stop_loss)}</b></span>
+      </div>
+      <div class="flex items-center justify-between mt-4 border-t border-bordercol/50 pt-3">
+        <div class="text-xs text-text3col">R:R = <b>${p.risk_reward}</b></div>
+        <div class="text-xs bg-bg3 px-3 py-1 rounded-full font-medium" style="color:${confColor}">${confPct}% conf.</div>
+      </div>
+      <div class="h-1.5 bg-bordercol rounded-full mt-4 overflow-hidden" style="margin-top:8px">
+        <div class="h-full rounded-full transition-all duration-1000 ease-out" style="width:${confPct}%;background:${confColor}"></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ════════════════════════════════════════════════════════
+// EXPLORE
+// ════════════════════════════════════════════════════════
+let expTimeout;
+
+async function loadExplore() {
+  document.getElementById('exp-home').style.display = '';
+  document.getElementById('exp-detail').style.display = 'none';
+  loading('exp-grid');
+  const stocks = await get('/nifty50/');
+  if (!stocks) { empty('exp-grid','⚠️','Failed to load'); return; }
+  // Get live quotes for grid
+  const quotesArr = await get('/stocks/');
+  const qMap = {};
+  if (quotesArr) quotesArr.forEach(q => qMap[q.symbol] = q);
+  document.getElementById('exp-grid').innerHTML = stocks.map(s => {
+    const q = qMap[s.symbol] || {};
+    return `<div class="bg-bg2 border border-bordercol rounded-2xl p-5 shadow-lg" style="cursor:pointer;padding:13px" onclick="openStock('${s.symbol}')">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center text-xs font-bold shrink-0 text-bg shadow-inner" style="background:${avColor(s.symbol)};width:28px;height:28px;font-size:10px;border-radius:7px">${avInit(s.symbol)}</div>
+        <div>
+          <div style="font-size:12px;font-weight:700">${s.symbol}</div>
+          <div style="font-size:10px;color:${SEC_COLORS[s.sector]||'#64748B'}">${s.sector}</div>
+        </div>
+      </div>
+      <div style="font-size:15px;font-weight:700;font-family:var(--mono)">₹${fmt(q.last_price||0)}</div>
+      <div style="font-size:11px;${(q.change_pct||0)>=0?'color:var(--success)':'color:#EF4444'}">${chgSign(q.change_pct)}${(+q.change_pct||0).toFixed(2)}%</div>
+    </div>`;
+  }).join('');
+}
+
+function expSearch(val) {
+  clearTimeout(expTimeout);
+  if (!val.trim()) { document.getElementById('exp-results').innerHTML=''; return; }
+  expTimeout = setTimeout(async () => {
+    const results = await get(`/search/?q=${encodeURIComponent(val)}`);
+    if (!results?.length) { document.getElementById('exp-results').innerHTML='<div style="font-size:12px;color:#64748B;padding:6px">No results</div>'; return; }
+    document.getElementById('exp-results').innerHTML = results.map(s => `
+      <div class="flex items-center p-3 border-b border-bordercol gap-3 cursor-pointer rounded-xl transition-all hover:bg-bg3 group last:border-0" style="background:#334155;border-radius:7px;margin-bottom:5px" onclick="openStock('${s.symbol}')">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center text-xs font-bold shrink-0 text-bg shadow-inner" style="background:${avColor(s.symbol)};width:28px;height:28px;font-size:10px">${avInit(s.symbol)}</div>
+        <div class="flex-1"><div class="text-base font-bold group-hover:text-brand transition-colors">${s.symbol}</div><div class="text-xs text-text2col mt-0.5 truncate max-w-[150px]">${s.name}</div></div>
+        <div class="text-right">
+          <div style="font-size:12px;font-weight:600;font-family:var(--mono)">₹${fmt(s.last_price||0)}</div>
+          <div class="text-xs mt-0.5 font-medium ${chgClass(s.change_pct||0)}">${chgSign(s.change_pct)}${(+s.change_pct||0).toFixed(2)}%</div>
+        </div>
+      </div>`).join('');
+  }, 280);
+}
+
+function backExplore() {
+  document.getElementById('exp-home').style.display = '';
+  document.getElementById('exp-detail').style.display = 'none';
+}
+
+// ════════════════════════════════════════════════════════
+// STOCK DETAIL
+// ════════════════════════════════════════════════════════
+let detailSymbol = '', detailType = 'intraday';
+let portType = 'intraday';
+
+async function openStock(symbol) {
+  detailSymbol = symbol;
+  detailType = 'intraday';
+  portType = 'intraday';
+  nav('explore');
+  document.getElementById('exp-home').style.display = 'none';
+  document.getElementById('exp-detail').style.display = '';
+  document.getElementById('detail-body').innerHTML = '<div class="spin"></div>';
+  await renderDetail(symbol, 'intraday');
+}
+
+async function renderDetail(symbol, type) {
+  detailType = type;
+  document.getElementById('detail-body').innerHTML = '<div class="spin"></div>';
+
+  const [quote, hist, pred] = await Promise.all([
+    get(`/quote/${symbol}/`),
+    get(`/history/${symbol}/?days=60`),
+    get(`/predict/${symbol}/?type=${type}`),
+  ]);
+
+  if (!quote || !pred) {
+    document.getElementById('detail-body').innerHTML = '<div class="text-center py-12 px-6 text-text3col bg-bg2/30 border border-dashed border-bordercol rounded-2xl mt-4"><div class="text-5xl mb-4 opacity-70">⚠️</div>Failed to load stock data</div>';
+    return;
+  }
+
+  const sig   = pred.signal?.toLowerCase() || 'hold';
+  const confP = Math.round((pred.confidence || 0.5) * 100);
+  const confColor = confP >= 70 ? 'var(--success)' : confP >= 55 ? '#F59E0B' : '#EF4444';
+  const ind = pred.indicators || {};
+  const candles = hist?.candles || [];
+
+  const html = `
+    <div class="flex items-start justify-between mb-6 gap-4 p-4 bg-bg2 rounded-2xl border border-bordercol shadow-md">
+      <div>
+        <div class="text-2xl font-outfit font-bold">${symbol}</div>
+        <div class="text-sm text-text3col mt-1 font-medium" style="color:${SEC_COLORS[quote.sector]||'#64748B'}">
+          NSE · Exchange
+        </div>
+      </div>
+      <div style="text-align:right">
+        <div class="text-4xl font-bold font-mono">₹${fmt(quote.last_price)}</div>
+        <div class="text-base mt-2 font-medium ${chgClass(quote.change_pct)}">
+          ${quote.change_pct>=0?'▲':'▼'} ${Math.abs(quote.change_pct).toFixed(2)}% (₹${fmt(Math.abs(quote.change))})
+        </div>
+      </div>
+    </div>
+
+    <div class="flex bg-bg3/50 p-1 rounded-xl w-fit mb-6 border border-bordercol">
+      <button class="tab ${type==='intraday'?'active':''}" onclick="renderDetail('${symbol}','intraday')">⚡ Intraday</button>
+      <button class="tab ${type==='longterm'?'active':''}"  onclick="renderDetail('${symbol}','longterm')">📅 Long Term</button>
+    </div>
+
+    <div class="g2 grid lg:grid-cols-2 gap-6">
+      <!-- LEFT -->
+      <div>
+        <div class="interactive-card border border-bordercol rounded-2xl p-5 shadow-soft mb-4">
+          <div class="text-sm font-bold text-text2col uppercase tracking-wider mb-5 flex items-center justify-between">📊 Price Chart — 60 Days</div>
+          <div class="chart-box"><canvas id="canv-${symbol}" height="200"></canvas></div>
+        </div>
+
+        <div class="rounded-2xl p-6 mb-4 shadow-lg border ${sig}">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <div>
+              <div class="text-3xl font-black tracking-wider flex items-center gap-3 ${sig==='buy'?'up':sig==='sell'?'down':''}">
+                ${pred.signal==='BUY'?'🚀':pred.signal==='SELL'?'📉':'⏸'} ${pred.signal}
+              </div>
+              <div class="text-sm text-text2col mt-2 font-medium">${confP}% Confidence · Score: ${pred.score}/10</div>
+            </div>
+            <button class="px-3 py-1.5 border border-bordercol text-textcol hover:border-brand hover:text-brand rounded-lg text-xs font-semibold transition-all" onclick="addWatchlist('${symbol}')">+ Watchlist</button>
+          </div>
+          <div class="h-1.5 bg-bordercol rounded-full mt-4 overflow-hidden">
+            <div class="h-full rounded-full transition-all duration-1000 ease-out" style="width:${confP}%;background:${confColor}"></div>
+          </div>
+          <div class="flex gap-3 flex-wrap mt-5">
+            ${tgt('ENTRY', fmt(pred.entry), '#F8FAFC')}
+            ${tgt('STOP LOSS', fmt(pred.stop_loss), '#EF4444')}
+            ${tgt('TARGET 1', fmt(pred.target1), 'var(--success)')}
+            ${tgt('TARGET 2', fmt(pred.target2), 'var(--success)')}
+            ${pred.target3 ? tgt('TARGET 3', fmt(pred.target3), 'var(--success)') : ''}
+          </div>
+          <div style="margin-top:10px;font-size:12px;color:#64748B">Risk:Reward = <b style="color:#F8FAFC">${pred.risk_reward}</b></div>
+        </div>
+
+        <div class="mt-4 bg-bg2 border border-bordercol p-4 rounded-2xl space-y-3" style="margin-top:14px">
+          ${(pred.reasoning||[]).map(r => `
+            <div class="flex items-start gap-3 text-sm text-text2col">
+              <div class="w-2 h-2 rounded-full shrink-0 mt-1.5 shadow-sm" style="background:${sig==='buy'?'var(--success)':sig==='sell'?'#EF4444':'#F59E0B'}"></div>
+              <span>${r}</span>
+            </div>`).join('')}
+        </div>
+      </div>
+
+      <!-- RIGHT -->
+      <div class="flex flex-col gap-4">
+        <div class="interactive-card border border-bordercol rounded-2xl p-5 shadow-soft">
+          <div class="text-sm font-bold text-text2col uppercase tracking-wider mb-5 flex items-center justify-between">🔬 Technical Indicators</div>
+          <div class="grid grid-cols-2 lg:grid-cols-3 gap-3">
+            ${indBox('RSI', ind.rsi, ind.rsi<30?'up':ind.rsi>70?'down':'neu')}
+            ${indBox('SMA 20', ind.sma20 ? '₹'+fmt(ind.sma20) : '—', 'neu')}
+            ${indBox('SMA 50', ind.sma50 ? '₹'+fmt(ind.sma50) : '—', 'neu')}
+            ${indBox('MACD', ind.macd != null ? ind.macd : '—', ind.macd_hist>0?'up':'down')}
+            ${indBox('BB Upper', ind.bb_upper ? '₹'+fmt(ind.bb_upper) : '—', 'neu')}
+            ${indBox('BB Lower', ind.bb_lower ? '₹'+fmt(ind.bb_lower) : '—', 'neu')}
+          </div>
+        </div>
+
+        <div class="bg-bg2 border border-bordercol rounded-2xl p-5 shadow-lg" style="margin-bottom:14px">
+          <div class="text-sm font-bold text-text2col uppercase tracking-wider mb-5 flex items-center justify-between">📋 Today's OHLCV</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            ${ohlcBox('Open',  quote.open)}
+            ${ohlcBox('High',  quote.high)}
+            ${ohlcBox('Low',   quote.low)}
+            ${ohlcBox('Close', quote.close)}
+            <div style="background:#334155;border-radius:8px;padding:11px">
+              <div style="font-size:10px;color:#64748B;font-weight:700;letter-spacing:.5px">Volume</div>
+              <div style="font-size:14px;font-weight:700;font-family:var(--mono);margin-top:3px">${fmtK(quote.volume)}</div>
+            </div>
+            <div style="background:#334155;border-radius:8px;padding:11px">
+              <div style="font-size:10px;color:#64748B;font-weight:700;letter-spacing:.5px">Change %</div>
+              <div style="font-size:14px;font-weight:700;font-family:var(--mono);margin-top:3px;${quote.change_pct>=0?'color:var(--success)':'color:#EF4444'}">${chgSign(quote.change_pct)}${(+quote.change_pct).toFixed(2)}%</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-bg2 border border-bordercol rounded-2xl p-5 shadow-lg">
+          <div class="text-sm font-bold text-text2col uppercase tracking-wider mb-5 flex items-center justify-between">💾 Add to Portfolio</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+            <div>
+              <div style="font-size:11px;color:#64748B;margin-bottom:4px">Quantity</div>
+              <input class="w-full bg-bg3 border border-bordercol rounded-xl px-4 py-2.5 text-sm focus:border-brand outline-none transition-all font-mono mb-2" style="width:100%" type="number" id="qty-inp" placeholder="10" min="1"/>
+            </div>
+            <div>
+              <div style="font-size:11px;color:#64748B;margin-bottom:4px">Buy Price (₹)</div>
+              <input class="w-full bg-bg3 border border-bordercol rounded-xl px-4 py-2.5 text-sm focus:border-brand outline-none transition-all font-mono mb-2" style="width:100%" type="number" id="bp-inp" value="${quote.last_price}" step="0.01"/>
+            </div>
+          </div>
+          <div class="flex bg-bg3/50 p-1 rounded-xl w-fit mb-6 border border-bordercol" style="margin-bottom:10px">
+            <button class="px-5 py-2 rounded-lg text-sm font-semibold transition-all bg-brand text-bg shadow-md nav-tab active " id="pt-intra" onclick="setPortType('intraday')">Intraday</button>
+            <button class="tab"        id="pt-long"  onclick="setPortType('longterm')">Long Term</button>
+          </div>
+          <button class="w-full py-2.5 bg-brand text-bg font-bold rounded-xl hover:bg-brand/90 transition-all shadow-glow" style="width:100%" onclick="addToPortfolio('${symbol}', ${quote.last_price})">Add to Portfolio</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('detail-body').innerHTML = html;
+  setTimeout(() => drawChart('canv-'+symbol, candles), 80);
+}
+
+function tgt(label, val, color) {
+  return `<div class="bg-bg3/50 border border-bordercol rounded-xl p-3 flex-1 min-w-[72px] text-center"><div class="text-[10px] text-text3col font-bold tracking-widest mb-1">${label}</div><div class="text-base font-bold font-mono" style="color:${color}">₹${val}</div></div>`;
+}
+function indBox(label, val, cls) {
+  return `<div class="bg-bg3/50 border border-bordercol rounded-xl p-3"><div class="text-[10px] text-text3col font-bold tracking-widest mb-1">${label}</div><div class="text-lg font-bold font-mono ${cls}">${val??'—'}</div></div>`;
+}
+function ohlcBox(label, val) {
+  return `<div style="background:#334155;border-radius:8px;padding:11px">
+    <div style="font-size:10px;color:#64748B;font-weight:700;letter-spacing:.5px">${label}</div>
+    <div style="font-size:14px;font-weight:700;font-family:var(--mono);margin-top:3px">₹${fmt(val)}</div>
+  </div>`;
+}
+
+function setPortType(type) {
+  portType = type;
+  document.getElementById('pt-intra').className = type==='intraday' ? 'px-5 py-2 rounded-lg text-sm font-semibold transition-all bg-brand text-bg shadow-md nav-tab active ' : 'px-5 py-2 rounded-lg text-sm font-semibold transition-all text-text2col hover:text-textcol nav-tab ';
+  document.getElementById('pt-long').className = type==='longterm' ? 'px-5 py-2 rounded-lg text-sm font-semibold transition-all bg-brand text-bg shadow-md nav-tab active ' : 'px-5 py-2 rounded-lg text-sm font-semibold transition-all text-text2col hover:text-textcol nav-tab ';
+}
+
+// ════════════════════════════════════════════════════════
+// CHART (Canvas)
+// ════════════════════════════════════════════════════════
+function drawChart(canvasId, candles) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas || !candles.length) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.parentElement.offsetWidth;
+  const H = 200;
+  canvas.width = W; canvas.height = H;
+
+  const closes = candles.map(c => c.close);
+  const minV = Math.min(...closes) * 0.995;
+  const maxV = Math.max(...closes) * 1.005;
+  const range = maxV - minV || 1;
+  const toY = v => H - ((v - minV) / range) * H;
+  const pts = closes.map((v, i) => ({x: i / (closes.length - 1) * W, y: toY(v)}));
+
+  // Grid lines
+  ctx.strokeStyle = 'rgba(255,255,255,.05)'; ctx.lineWidth = 1;
+  [0.25, 0.5, 0.75].forEach(f => {
+    const y = H * f; ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke();
+  });
+
+  const up = closes[closes.length-1] >= closes[0];
+  const lineColor = up ? '#00d09c' : '#ff5c5c';
+
+  // Fill
+  const grad = ctx.createLinearGradient(0,0,0,H);
+  grad.addColorStop(0, up ? 'rgba(0,208,156,.25)' : 'rgba(255,92,92,.25)');
+  grad.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.beginPath();
+  ctx.moveTo(pts[0].x, H);
+  pts.forEach(p => ctx.lineTo(p.x, p.y));
+  ctx.lineTo(pts[pts.length-1].x, H);
+  ctx.closePath(); ctx.fillStyle = grad; ctx.fill();
+
+  // Line
+  ctx.beginPath(); ctx.strokeStyle = lineColor; ctx.lineWidth = 2;
+  pts.forEach((p,i) => i === 0 ? ctx.moveTo(p.x,p.y) : ctx.lineTo(p.x,p.y));
+  ctx.stroke();
+
+  // Labels
+  ctx.fillStyle = 'rgba(148,163,184,.8)'; ctx.font = '10px Space Mono,monospace'; ctx.textAlign = 'right';
+  [[minV, H-4], [(minV+maxV)/2, H/2-2], [maxV, 12]].forEach(([v,y]) => {
+    ctx.fillText('₹'+v.toFixed(0), W-4, y);
+  });
+}
+
+// ════════════════════════════════════════════════════════
+// HEADER SEARCH
+// ════════════════════════════════════════════════════════
+let hdrTimer;
+async function hdrSearch(val) {
+  const drop = document.getElementById('hdr-drop');
+  clearTimeout(hdrTimer);
+  if (!val.trim()) { drop.style.display='none'; return; }
+  hdrTimer = setTimeout(async () => {
+    const results = await get(`/search/?q=${encodeURIComponent(val)}`);
+    if (!results?.length) { drop.style.display='none'; return; }
+    drop.style.display = 'block';
+    drop.innerHTML = results.map(s => `
+      <div class="flex items-center justify-between p-3 cursor-pointer text-sm transition-all hover:bg-bg3 group" onclick="pickSearch('${s.symbol}')">
+        <div><div class="font-bold text-textcol group-hover:text-brand transition-colors">${s.symbol}</div><div class="text-xs text-text2col mt-0.5">${s.name}</div></div>
+        <span class="text-[10px] text-brand bg-brand/10 px-2.5 py-1 rounded-full font-semibold">${s.sector}</span>
+      </div>`).join('');
+  }, 300);
+}
+
+function pickSearch(symbol) {
+  document.getElementById('hdr-drop').style.display = 'none';
+  document.getElementById('hdr-search').value = '';
+  openStock(symbol);
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.search-wrap'))
+    document.getElementById('hdr-drop').style.display = 'none';
+});
+
+// ════════════════════════════════════════════════════════
+// WATCHLIST
+// ════════════════════════════════════════════════════════
+async function addWatchlist(symbol) {
+  const res = await post('/watchlist/add/', {symbol});
+  if (res) toast(res.created ? `${symbol} added to watchlist ⭐` : `${symbol} already in watchlist`);
+}
+
+async function loadWatchlist() {
+  loading('wl-body');
+  const data = await get('/watchlist/');
+  if (!data || !data.length) {
+    empty('wl-body','⭐','Watchlist is empty — search stocks and add them');
+    return;
+  }
+  document.getElementById('wl-body').innerHTML = `
+    <div class="bg-bg2 border border-bordercol rounded-2xl p-5 shadow-lg">
+      <div class="text-sm font-bold text-text2col uppercase tracking-wider mb-5 flex items-center justify-between">Watchlist (${data.length})</div>
+      ${data.map(s => `
+        <div class="flex items-center p-3 border-b border-bordercol gap-3 cursor-pointer rounded-xl transition-all hover:bg-bg3 group last:border-0">
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center text-xs font-bold shrink-0 text-bg shadow-inner" style="background:${avColor(s.symbol)}">${avInit(s.symbol)}</div>
+          <div class="flex-1" onclick="openStock('${s.symbol}')" style="cursor:pointer">
+            <div class="text-base font-bold group-hover:text-brand transition-colors">${s.symbol}</div>
+            <div class="text-xs text-text2col mt-0.5 truncate max-w-[150px]">${s.exchange}</div>
+          </div>
+          <div style="margin-right:12px">${badgeOf(s.signal)}</div>
+          <div class="text-right">
+            <div class="text-base font-bold font-mono">₹${fmt(s.last_price)}</div>
+            <div class="text-xs mt-0.5 font-medium ${chgClass(s.change_pct)}">${chgSign(s.change_pct)}${(+s.change_pct).toFixed(2)}%</div>
+          </div>
+          <button class="px-3 py-1.5 bg-danger/10 text-danger border border-danger/30 hover:bg-danger hover:text-white rounded-lg text-xs font-semibold transition-all" style="margin-left:12px" onclick="removeWL(${s.id},'${s.symbol}')">✕</button>
+        </div>`).join('')}
+    </div>`;
+}
+
+async function removeWL(id, symbol) {
+  await del(`/watchlist/${id}/remove/`);
+  toast(`${symbol} removed`); loadWatchlist();
+}
+
+// ════════════════════════════════════════════════════════
+// PORTFOLIO
+// ════════════════════════════════════════════════════════
+async function addToPortfolio(symbol, defaultPrice) {
+  const qty   = parseInt(document.getElementById('qty-inp')?.value || 0);
+  const price = parseFloat(document.getElementById('bp-inp')?.value || defaultPrice);
+  if (!qty || !price) { toast('Enter quantity and buy price', true); return; }
+  const res = await post('/portfolio/add/', {symbol, quantity:qty, buy_price:price, investment_type:portType});
+  if (res?.id) toast(`${symbol} added to portfolio 💼`);
+  else toast('Failed to add', true);
+}
+
+async function loadPortfolio() {
+  loading('port-body');
+  const data = await get('/portfolio/');
+  if (!data) { empty('port-body','⚠️','Failed to load'); return; }
+  if (!data.holdings?.length) {
+    empty('port-body','💼','No holdings yet — explore stocks and add them to portfolio');
+    return;
+  }
+  document.getElementById('port-body').innerHTML = `
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div class="bg-bg2 border border-bordercol rounded-2xl p-5 shadow-md relative overflow-hidden"><div class="text-[10px] text-text3col font-bold tracking-widest mb-2 z-10 relative">INVESTED</div><div class="text-2xl font-bold font-mono z-10 relative">₹${fmt(data.total_invested)}</div></div>
+      <div class="bg-bg2 border border-bordercol rounded-2xl p-5 shadow-md relative overflow-hidden"><div class="text-[10px] text-text3col font-bold tracking-widest mb-2 z-10 relative">CURRENT VALUE</div><div class="text-2xl font-bold font-mono z-10 relative">₹${fmt(data.total_current)}</div></div>
+      <div class="bg-bg2 border border-bordercol rounded-2xl p-5 shadow-md relative overflow-hidden"><div class="text-[10px] text-text3col font-bold tracking-widest mb-2 z-10 relative">TOTAL P&L</div><div class="text-2xl font-bold font-mono z-10 relative ${chgClass(data.total_pnl)}">${chgSign(data.total_pnl)}₹${fmt(Math.abs(data.total_pnl))}</div></div>
+      <div class="bg-bg2 border border-bordercol rounded-2xl p-5 shadow-md relative overflow-hidden"><div class="text-[10px] text-text3col font-bold tracking-widest mb-2 z-10 relative">RETURNS</div><div class="text-2xl font-bold font-mono z-10 relative ${chgClass(data.total_pnl_pct)}">${chgSign(data.total_pnl_pct)}${(+data.total_pnl_pct).toFixed(2)}%</div></div>
+    </div>
+    <div class="bg-bg2 border border-bordercol rounded-2xl p-5 shadow-lg">
+      <div class="text-sm font-bold text-text2col uppercase tracking-wider mb-5 flex items-center justify-between">Holdings (${data.holdings.length})</div>
+      ${data.holdings.map(h => `
+        <div class="flex items-center p-3 border-b border-bordercol gap-3 cursor-pointer rounded-xl transition-all hover:bg-bg3 group last:border-0">
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center text-xs font-bold shrink-0 text-bg shadow-inner" style="background:${avColor(h.symbol)}">${avInit(h.symbol)}</div>
+          <div class="flex-1" onclick="openStock('${h.symbol}')" style="cursor:pointer">
+            <div class="text-base font-bold group-hover:text-brand transition-colors">${h.symbol}
+              <span style="font-size:10px;color:${h.investment_type==='intraday'?'var(--blue)':'var(--success)'};background:${h.investment_type==='intraday'?'rgba(79,172,254,.12)':'var(--gdim)'};padding:1px 6px;border-radius:10px;margin-left:5px">${h.investment_type}</span>
+            </div>
+            <div class="text-xs text-text2col mt-0.5 truncate max-w-[150px]">${h.quantity} shares · Avg ₹${fmt(h.buy_price)}</div>
+          </div>
+          <div class="text-right">
+            <div class="text-base font-bold font-mono">₹${fmt(h.current_value)}</div>
+            <div class="text-xs mt-0.5 font-medium ${chgClass(h.pnl)}">${chgSign(h.pnl)}₹${fmt(Math.abs(h.pnl))} (${chgSign(h.pnl_pct)}${(+h.pnl_pct).toFixed(2)}%)</div>
+          </div>
+          <button class="px-3 py-1.5 bg-danger/10 text-danger border border-danger/30 hover:bg-danger hover:text-white rounded-lg text-xs font-semibold transition-all" style="margin-left:12px" onclick="removeHolding(${h.id},'${h.symbol}')">✕</button>
+        </div>`).join('')}
+    </div>`;
+}
+
+async function removeHolding(id, symbol) {
+  await del(`/portfolio/${id}/remove/`);
+  toast(`${symbol} removed`); loadPortfolio();
+}
+
+// ════════════════════════════════════════════════════════
+// SETTINGS
+// ════════════════════════════════════════════════════════
+function saveSettings() {
+  const key    = document.getElementById('s-key').value.trim();
+  const secret = document.getElementById('s-secret').value.trim();
+  const token  = document.getElementById('s-token').value.trim();
+  if (key && token) {
+    document.getElementById('kite-dot').classList.add('on');
+    document.getElementById('kite-lbl').textContent = 'Kite: Connected';
+  }
+  toast('Saved! Add to your .env file and restart Django for live data.');
+}
+
+// ════════════════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════════════════
+loadDashboard();
+loadExplore();
+
+</script>
+</body>
+</html>
